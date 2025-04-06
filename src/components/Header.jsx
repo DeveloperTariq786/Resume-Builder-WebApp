@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, LogOut, X, BookOpen } from 'lucide-react';
+import { 
+  Home, 
+  LogOut, 
+  X, 
+  BookOpen, 
+  FileText, 
+  User, 
+  ChevronRight,
+  Menu
+} from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
-const ProfileDrawer = ({ isOpen, onClose, user, handleSignOut, setCurrentPage }) => {
+const ProfileDrawer = ({ isOpen, onClose, user, handleSignOut }) => {
+  const navigate = useNavigate();
+  
   const drawerVariants = {
     closed: { 
       x: '100%',
@@ -40,18 +52,11 @@ const ProfileDrawer = ({ isOpen, onClose, user, handleSignOut, setCurrentPage })
     }
   };
 
-  const contentVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: (index) => ({
-      opacity: 1,
-      x: 0,
-      transition: {
-        delay: index * 0.1,
-        duration: 0.5,
-        ease: [0.25, 0.1, 0.25, 1],
-      },
-    }),
-  };
+  const navItems = [
+    { icon: <Home size={18} />, title: 'Home', path: '/' },
+    { icon: <BookOpen size={18} />, title: 'Templates', path: '/templates' },
+    { icon: <User size={18} />, title: 'Profile', path: '/profile' }
+  ];
 
   return (
     <AnimatePresence mode="wait">
@@ -71,92 +76,79 @@ const ProfileDrawer = ({ isOpen, onClose, user, handleSignOut, setCurrentPage })
             animate="open"
             exit="closed"
             variants={drawerVariants}
-            className="fixed right-0 top-0 h-full w-72 bg-white shadow-xl z-50"
+            className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl z-50 overflow-hidden"
           >
-            <div className="p-4 h-full">
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                className="space-y-6 h-full"
-              >
-                <motion.div 
-                  custom={0} 
-                  variants={contentVariants}
-                  className="flex justify-between items-center"
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="p-5 border-b flex justify-between items-center">
+                <div className="flex items-baseline">
+                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    LaTeXify
+                  </span>
+                  <span className="text-xl font-bold mx-0.5 text-blue-600">.</span>
+                  <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-400 bg-clip-text text-transparent">
+                    AI
+                  </span>
+                </div>
+                <button 
+                  onClick={onClose} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  aria-label="Close menu"
                 >
-                  <div className="flex items-baseline">
-                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                      LaTeXify
-                    </span>
-                    <span className="text-xl font-bold mx-0.5 text-blue-600">.</span>
-                    <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-400 bg-clip-text text-transparent">
-                      AI
-                    </span>
-                  </div>
-                  <button 
-                    onClick={onClose} 
-                    className="p-1.5 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                  >
-                    <X size={20} />
-                  </button>
-                </motion.div>
-                
-                <motion.div 
-                  custom={1} 
-                  variants={contentVariants}
-                  className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg"
-                >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                    {user?.displayName?.[0] || user?.email?.[0]}
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {/* User profile */}
+              <div className="p-5 border-b">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
+                    {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                   </div>
                   <div>
-                    <div className="font-medium">{user?.displayName}</div>
+                    <div className="font-semibold">{user?.displayName || 'User'}</div>
                     <div className="text-sm text-gray-500">{user?.email}</div>
                   </div>
-                </motion.div>
-                
-                <motion.nav 
-                  custom={2} 
-                  variants={contentVariants}
-                  className="space-y-2"
+                </div>
+              </div>
+              
+              {/* Navigation */}
+              <nav className="flex-1 overflow-y-auto px-3 py-4">
+                <div className="space-y-1">
+                  {navItems.map((item, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ backgroundColor: 'rgba(243, 244, 246, 1)' }}
+                      onClick={() => {
+                        navigate(item.path);
+                        onClose();
+                      }}
+                      className="flex items-center justify-between w-full p-3 rounded-lg text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-blue-600">{item.icon}</div>
+                        <span>{item.title}</span>
+                      </div>
+                      <ChevronRight size={16} className="text-gray-400" />
+                    </motion.button>
+                  ))}
+                </div>
+              </nav>
+              
+              {/* Footer */}
+              <div className="p-3 border-t">
+                <motion.button
+                  whileHover={{ backgroundColor: 'rgba(254, 226, 226, 1)' }}
+                  onClick={() => {
+                    handleSignOut();
+                    onClose();
+                  }}
+                  className="flex items-center gap-3 w-full p-3 rounded-lg text-red-600 transition-colors duration-200"
                 >
-                  <motion.button
-                    whileHover={{ x: 4 }}
-                    onClick={() => {
-                      setCurrentPage('landing');
-                      onClose();
-                    }}
-                    className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                  >
-                    <Home size={20} className="text-blue-600" />
-                    <span>Home</span>
-                  </motion.button>
-                  
-                  <motion.button
-                    whileHover={{ x: 4 }}
-                    onClick={() => {
-                      setCurrentPage('templates');
-                      onClose();
-                    }}
-                    className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                  >
-                    <BookOpen size={20} className="text-blue-600" />
-                    <span>Templates</span>
-                  </motion.button>
-                  
-                  <motion.button
-                    whileHover={{ x: 4 }}
-                    onClick={() => {
-                      handleSignOut();
-                      onClose();
-                    }}
-                    className="flex items-center gap-3 w-full p-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-                  >
-                    <LogOut size={20} />
-                    <span>Sign Out</span>
-                  </motion.button>
-                </motion.nav>
-              </motion.div>
+                  <LogOut size={18} />
+                  <span className="font-medium">Sign Out</span>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </>
@@ -165,80 +157,110 @@ const ProfileDrawer = ({ isOpen, onClose, user, handleSignOut, setCurrentPage })
   );
 };
 
-const Header = ({ currentPage, setCurrentPage, user, setShowAuth, setIsRegister }) => {
+const Header = ({ user, showAuthModal }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      navigate('/');
     } catch (error) {
       console.error('Sign out error:', error);
     }
   };
 
+  const navItems = [
+    { title: 'Home', path: '/' },
+    { title: 'Templates', path: '/templates' },
+    { title: 'Profile', path: '/profile' }
+  ];
+
   return (
     <>
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-4 group cursor-pointer"
-            >
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
+      <header className="bg-white border-b sticky top-0 z-30">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-9 h-9 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow group-hover:shadow-md transition-all duration-300">
                 L
               </div>
-              <div className="flex items-baseline">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-indigo-600 group-hover:to-blue-600 transition-all duration-300">
+              <div className="hidden sm:flex items-baseline">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-indigo-600 group-hover:to-blue-600 transition-all duration-300">
                   LaTeXify
                 </h1>
-                <span className="text-2xl font-bold mx-0.5 text-blue-600 group-hover:text-indigo-600 transition-colors duration-300">
+                <span className="text-xl font-bold mx-0.5 text-blue-600 group-hover:text-indigo-600 transition-colors duration-300">
                   .
                 </span>
-                <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-400 bg-clip-text text-transparent group-hover:from-blue-400 group-hover:to-indigo-600 transition-all duration-300">
+                <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-blue-400 bg-clip-text text-transparent group-hover:from-blue-400 group-hover:to-indigo-600 transition-all duration-300">
                   AI
                 </span>
               </div>
-            </motion.div>
+            </Link>
             
-            <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navItems.map((item, index) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={index}
+                    to={item.path}
+                    className={`px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
+                      isActive 
+                        ? 'text-blue-600 bg-blue-50' 
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </Link>
+                );
+              })}
+            </nav>
+            
+            {/* Authentication */}
+            <div className="flex items-center gap-2 md:gap-4">
               {user ? (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsDrawerOpen(true)}
-                  className="flex items-center gap-2 transition-transform duration-200"
+                  className="flex items-center gap-2"
+                  aria-label="Open menu"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md hover:shadow-lg transition-shadow duration-300">
-                    {user.displayName?.[0] || user.email?.[0]}
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md hover:shadow-lg transition-shadow duration-300">
+                    {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                   </div>
+                  <Menu className="md:hidden text-gray-500" size={20} />
                 </motion.button>
               ) : (
-                <div className="flex items-center gap-4">
+                <>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setIsRegister(false);
-                      setShowAuth(true);
-                    }}
-                    className="text-gray-600 hover:text-blue-600 transition-colors font-medium px-4 py-2"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => showAuthModal(false)}
+                    className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-1.5 hidden sm:block"
                   >
-                    Login
+                    Log In
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setIsRegister(true);
-                      setShowAuth(true);
-                    }}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-indigo-600 hover:to-blue-600 text-white px-6 py-2 rounded-xl font-medium shadow-md hover:shadow-lg transition-all duration-300"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => showAuthModal(true)}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-indigo-600 hover:to-blue-600 text-white px-4 py-1.5 rounded-md font-medium shadow hover:shadow-md transition-all duration-300"
                   >
-                    Register
+                    Get Started
                   </motion.button>
-                </div>
+                  <button 
+                    onClick={() => setIsDrawerOpen(true)}
+                    className="md:hidden p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
+                    aria-label="Menu"
+                  >
+                    <Menu size={20} />
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -250,7 +272,6 @@ const Header = ({ currentPage, setCurrentPage, user, setShowAuth, setIsRegister 
         onClose={() => setIsDrawerOpen(false)}
         user={user}
         handleSignOut={handleSignOut}
-        setCurrentPage={setCurrentPage}
       />
     </>
   );
