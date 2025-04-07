@@ -99,15 +99,15 @@ const Video = ({ isOpen, onClose }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90">
-          <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black">
+          <div className="flex h-screen w-screen items-center justify-center">
             {/* Modal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full max-w-5xl rounded-xl bg-gradient-to-b from-gray-900 to-black shadow-2xl"
+              className="relative h-full w-full"
             >
               {/* Close button */}
               <button
@@ -118,7 +118,7 @@ const Video = ({ isOpen, onClose }) => {
               </button>
 
               {/* Video container */}
-              <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-black">
+              <div className="relative h-full w-full bg-black">
                 {loading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
@@ -135,12 +135,14 @@ const Video = ({ isOpen, onClose }) => {
                   <div className="group relative h-full">
                     <video
                       ref={ref => setVideoRef(ref)}
-                      className="h-full w-full"
+                      className="h-full w-full cursor-pointer"
                       onLoadedData={handleVideoLoad}
                       onTimeUpdate={handleTimeUpdate}
                       onError={() => setError('Failed to play video')}
                       onPlay={() => setIsPlaying(true)}
                       onPause={() => setIsPlaying(false)}
+                      onClick={togglePlay}
+                      autoPlay
                     >
                       <source src={selectedVideo.url} type="video/mp4" />
                     </video>
@@ -197,10 +199,10 @@ const Video = ({ isOpen, onClose }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="max-h-60 overflow-y-auto rounded-b-xl bg-black/50 p-6 backdrop-blur-sm"
+                  className="absolute bottom-0 left-0 right-0 max-h-40 overflow-y-auto bg-black/50 p-4 backdrop-blur-sm"
                 >
-                  <h3 className="mb-4 text-lg font-semibold text-white">More Videos</h3>
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  <h3 className="mb-2 text-lg font-semibold text-white">More Videos</h3>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                     {videos.map((video) => (
                       <motion.button
                         key={video.id}
@@ -210,7 +212,7 @@ const Video = ({ isOpen, onClose }) => {
                           setSelectedVideo(video);
                           setLoading(true);
                           setProgress(0);
-                          setIsPlaying(false);
+                          setIsPlaying(true);
                         }}
                         className={`group relative overflow-hidden rounded-lg transition-all ${
                           selectedVideo?.id === video.id
